@@ -11,3 +11,69 @@ minetest.register_node("world:dirt", {
     tiles = {"dz_dirt.png"}
 })
 
+
+local noise_parameters = {
+    offset = 0,
+    scale = 1,
+    spread = {x = 200, y = 100, z = 200},
+    seed = tonumber(minetest.get_mapgen_setting("seed")) or math.random(0,999999999),
+    octaves = 5,
+    persist = 0.9,
+    lacunarity = 1.5,
+}
+
+-- This grabs the perlin generator on the start of the server, exactly on the first tick
+minetest.register_on_mods_loaded(function()
+    -- minetest.after(0,function()
+        -- constant_perlin = 
+    -- end)
+end)
+
+local vm = {}
+local emin = {}
+local emax = {}
+local area = VoxelArea:new({MinEdge = vector.new(0,0,0), MaxEdge = vector.new(0,0,0)})
+local density_noise  = {}
+
+local data = {}
+
+
+
+-- local c_air = minetest.get_content_id("air")
+local grass = minetest.get_content_id("world:grass")
+local dirt = minetest.get_content_id("world:dirt")
+local stone = minetest.get_content_id("world:stone")
+
+local index
+local pos
+local below_index
+
+local constant_area = {x = 80, y = 80, z = 80}
+
+local baseHeight = 0 -- to 15
+local heightRange = 12
+
+minetest.register_on_generated(function(minp, maxp)
+
+    if maxp.y > 47 or minp.y < -32 then
+        return
+    end
+
+    vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
+    vm:get_data(data)
+    area = VoxelArea:new({MinEdge = emin, MaxEdge = emax})
+
+    for x = minp.x,maxp.x do
+        for z = minp.z, maxp.z do
+            -- todo: optimize this
+            local yHeight = math.floor((PerlinNoise(noise_parameters):get_2d({x = x, y = z}) * heightRange) + 0.5)
+            data[area:index(x,yHeight,z)] = grass
+            data[area:index(x,yHeight - 1,z)] = dirt
+            data[area:index(x,yHeight - 2,z)] = stone
+        end
+    end
+
+    vm:set_data(data)
+    vm:calc_lighting(nil, nil, false)
+    vm:write_to_map()
+end)
