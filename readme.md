@@ -4,8 +4,8 @@
 
 todo list
 
-1. textures
-2. world generation
+1. ~~textures~~
+2. ~~world generation~~ <- I guess
 3. basic melee combat system
 4. basic ranged combat system
 5. crafting
