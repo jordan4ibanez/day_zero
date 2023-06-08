@@ -1,0 +1,3 @@
+dz_grass = https://opengameart.org/content/3-seamless-grass-textures
+dz_dirt = https://opengameart.org/content/seamless-dirt
+dz_stone = https://opengameart.org/content/stone-texture
