@@ -53,11 +53,11 @@ local terrain_noise_parameters = {
 local tree_noise_parameters = {
     offset = 0,
     scale = 1,
-    spread = {x = 30, y = 30, z = 30},
+    spread = {x = 512, y = 512, z = 512},
     seed = tonumber(minetest.get_mapgen_setting("seed")) -50000,
-    octaves = 6,
-    persist = 0.7,
-    lacunarity = 15.0,
+    octaves = 7,
+    persist = 1.0,
+    lacunarity = 10.5,
 }
 
 
@@ -118,8 +118,8 @@ minetest.register_on_generated(function(minp, maxp)
 
                 -- Generate trees
                 local tree_noise = tree_perlin_noise:get_2d({x = x, y = z})
-                -- print("tree_noise:",tree_noise)
-                if (tree_noise > 10) then
+                print("tree_noise:",tree_noise)
+                if (tree_noise > 3) then
                     data[area:index(x,yHeight + 1,z)] = pine_tree
                 end
             end
