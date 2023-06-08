@@ -14,6 +14,20 @@ minetest.register_node("world:water", {
     tiles = {"dz_water.png"}
 })
 
+-- This is gonna be tough I think
+minetest.register_node("world:pine_tree", {
+    paramtype = "light",
+    paramtype2 = "degrotate",
+    drawtype = "mesh",
+    mesh = "dz_pine_tree.obj",
+    tiles = {
+        "dz_pine_tree_branch.png",
+        "dz_pine_tree_stem.png",
+    },
+    visual_scale = 1.0
+
+})
+
 local noise_parameters = {
     offset = 0,
     scale = 1,
