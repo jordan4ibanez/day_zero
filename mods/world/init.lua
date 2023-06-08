@@ -22,36 +22,20 @@ local noise_parameters = {
     lacunarity = 1.5,
 }
 
--- This grabs the perlin generator on the start of the server, exactly on the first tick
-minetest.register_on_mods_loaded(function()
-    -- minetest.after(0,function()
-        -- constant_perlin = 
-    -- end)
-end)
 
 local vm = {}
 local emin = {}
 local emax = {}
 local area = VoxelArea:new({MinEdge = vector.new(0,0,0), MaxEdge = vector.new(0,0,0)})
-local density_noise  = {}
 
 local data = {}
-
-
-
--- local c_air = minetest.get_content_id("air")
 local grass = minetest.get_content_id("world:grass")
 local dirt = minetest.get_content_id("world:dirt")
 local stone = minetest.get_content_id("world:stone")
 
-local index
-local pos
-local below_index
-
-local constant_area = {x = 80, y = 80, z = 80}
-
-local baseHeight = 0 -- to 15
 local heightRange = 12
+
+local perlinNoise = PerlinNoise(noise_parameters)
 
 minetest.register_on_generated(function(minp, maxp)
 
@@ -66,7 +50,7 @@ minetest.register_on_generated(function(minp, maxp)
     for x = minp.x,maxp.x do
         for z = minp.z, maxp.z do
             -- todo: optimize this
-            local yHeight = math.floor((PerlinNoise(noise_parameters):get_2d({x = x, y = z}) * heightRange) + 0.5)
+            local yHeight = math.floor((perlinNoise:get_2d({x = x, y = z}) * heightRange) + 0.5)
             data[area:index(x,yHeight,z)] = grass
             data[area:index(x,yHeight - 1,z)] = dirt
             data[area:index(x,yHeight - 2,z)] = stone
