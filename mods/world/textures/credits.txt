@@ -1,3 +1,4 @@
 dz_grass = https://opengameart.org/content/grass-texture
 dz_dirt = https://opengameart.org/content/seamless-dirt
 dz_stone = https://opengameart.org/content/stone-texture
+dz_water = https://opengameart.org/content/texture-water

@@ -10,15 +10,17 @@ minetest.register_node("world:stone", {
 minetest.register_node("world:dirt", {
     tiles = {"dz_dirt.png"}
 })
-
+minetest.register_node("world:water", {
+    tiles = {"dz_water.png"}
+})
 
 local noise_parameters = {
     offset = 0,
     scale = 1,
     spread = {x = 200, y = 100, z = 200},
     seed = tonumber(minetest.get_mapgen_setting("seed")) or math.random(0,999999999),
-    octaves = 5,
-    persist = 0.9,
+    octaves = 3,
+    persist = 0.95,
     lacunarity = 1.5,
 }
 
@@ -32,11 +34,24 @@ local data = {}
 local grass = minetest.get_content_id("world:grass")
 local dirt = minetest.get_content_id("world:dirt")
 local stone = minetest.get_content_id("world:stone")
+local water = minetest.get_content_id("world:water")
 
-local heightRange = 12
+-- Don't change these
+local minY = -32
+local maxY = 47
+
+-- You can change these
+local heightRange = 20
+local baseHeight = 2
+local waterHeight = 0
+
+-- Don't change these
+assert(baseHeight + heightRange <= maxY)
+assert(baseHeight - heightRange >= minY)
 
 local perlinNoise = PerlinNoise(noise_parameters)
 
+-- The map is actually 2d
 minetest.register_on_generated(function(minp, maxp)
 
     if maxp.y > 47 or minp.y < -32 then
@@ -49,11 +64,18 @@ minetest.register_on_generated(function(minp, maxp)
 
     for x = minp.x,maxp.x do
         for z = minp.z, maxp.z do
-            -- todo: optimize this
             local yHeight = math.floor((perlinNoise:get_2d({x = x, y = z}) * heightRange) + 0.5)
-            data[area:index(x,yHeight,z)] = grass
-            data[area:index(x,yHeight - 1,z)] = dirt
-            data[area:index(x,yHeight - 2,z)] = stone
+
+            if (yHeight <= waterHeight) then -- Generate water
+                -- Generates water with dirt under so swimming can be simulated
+                data[area:index(x,waterHeight,z)] = water
+                data[area:index(x,waterHeight - 1,z)] = dirt
+
+            else -- Generate land
+                data[area:index(x,yHeight,z)] = grass
+                data[area:index(x,yHeight - 1,z)] = dirt
+                data[area:index(x,yHeight - 2,z)] = stone
+            end
         end
     end
 
