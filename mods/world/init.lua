@@ -10,3 +10,4 @@ minetest.register_node("world:stone", {
 minetest.register_node("world:dirt", {
     tiles = {"dz_dirt.png"}
 })
+
