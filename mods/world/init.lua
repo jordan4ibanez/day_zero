@@ -23,6 +23,7 @@ minetest.register_node("world:pine_tree", {
     paramtype2 = "degrotate",
     drawtype = "mesh",
     mesh = "dz_pine_tree.obj",
+    use_texture_alpha = "clip",
     tiles = {
         "dz_pine_tree_branch.png",
         "dz_pine_tree_stem.png",
