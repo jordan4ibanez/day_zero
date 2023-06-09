@@ -7,8 +7,14 @@ minetest.register_entity("player:player", {
         textures = {
             "player.png"
         }
-    }
+    },
     -- todo: needs metadata to delete self
+    on_activate = function(self)
+        minetest.after(0,function()
+            if self.object:get_attach() then return end
+            self.object:remove()
+        end)
+    end
 })
 
 local function anim(start, finish)
@@ -40,8 +46,10 @@ end
 
 local player_models = {}
 
-local jump_attempt = 0.5
-local gravity = 0.981
+-- No Jumping
+local jump_attempt = 0.0
+-- Fast falling
+local gravity = 10.0
 
 -- Initial hook
 minetest.register_on_joinplayer(function(player)
