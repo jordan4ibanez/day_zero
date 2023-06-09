@@ -15,6 +15,7 @@ local pine_tree_collisionbox = {
     -0.2,-0.5,-0.2,
     0.2,7,0.2
 }
+-- Pine tree starts off standing up node
 minetest.register_node("world:pine_tree", {
     paramtype = "light",
     paramtype2 = "degrotate",
@@ -33,5 +34,11 @@ minetest.register_node("world:pine_tree", {
     selection_box = {
         type = "fixed",
         fixed = pine_tree_collisionbox
-    }
+    },
+
 })
+
+-- Pine tree falling over entity animation
+
+
+-- Pine tree fallen node
