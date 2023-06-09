@@ -40,6 +40,9 @@ end
 
 local player_models = {}
 
+local jump_attempt = 0.5
+local gravity = 0.981
+
 -- Initial hook
 minetest.register_on_joinplayer(function(player)
 
@@ -53,7 +56,8 @@ minetest.register_on_joinplayer(function(player)
     -- Disable minetest player model hardcodes
     player:set_properties({
         textures = {"dz_nothing.png"},
-        visual_size = {x = 1, y = 1}
+        visual_size = {x = 1, y = 1},
+        stepheight = 1.01
     })
 
     -- Now begin this hackjob to get first person body view
@@ -75,8 +79,11 @@ minetest.register_on_joinplayer(function(player)
 
 
     -- Now disable sneaking
+    -- Also you can jump but it ain't gonna get you no where
     player:set_physics_override({
-        sneak = false
+        sneak = false,
+        jump = jump_attempt,
+        gravity = gravity
     })
     -- print(dump2(player:get_physics_override()))
 end)
@@ -129,7 +136,7 @@ minetest.register_globalstep(function(dtime)
                 t.timer = 0
             end
 
-            print("in punch loop")
+        -- Now we're moving wooo
         else
             if (controls.up or controls.down or controls.left or controls.right) then
 
@@ -137,21 +144,21 @@ minetest.register_globalstep(function(dtime)
                     t.model:set_animation(dispatch_animation("sneak"))
                     player:set_physics_override({
                         speed = 0.5,
-                        jump = 1
+                        jump = jump_attempt
                     })
                     t.animation = "sneak"
                 elseif not running and not sneaking and t.animation ~= "walk" then
                     t.model:set_animation(dispatch_animation("walk"))
                     player:set_physics_override({
                         speed = 0.5,
-                        jump = 1
+                        jump = jump_attempt
                     })
                     t.animation = "walk"
                 elseif running and not sneaking and t.animation ~= "run" then
                     t.model:set_animation(dispatch_animation("run"))
                     player:set_physics_override({
                         speed = 1.25,
-                        jump = 1
+                        jump = jump_attempt
                     })
                     t.animation = "run"
                 end
@@ -160,7 +167,7 @@ minetest.register_globalstep(function(dtime)
                 t.model:set_animation(dispatch_animation("idle"))
                 player:set_physics_override({
                     speed = 0.5,
-                    jump = 1
+                    jump = jump_attempt
                 })
                 t.animation = "idle"
             end
