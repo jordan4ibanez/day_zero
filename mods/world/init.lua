@@ -81,11 +81,13 @@ local maxY = 47
 -- You can change these
 local heightRange = 20
 local baseHeight = 2
-local waterHeight = 0
+local waterHeight = -17
 
 -- Don't change these
 assert(baseHeight + heightRange <= maxY)
 assert(baseHeight - heightRange >= minY)
+assert(waterHeight - 1 > minY)
+assert(waterHeight + 1 < maxY)
 
 local terrain_perlin_noise = PerlinNoise(terrain_noise_parameters)
 local tree_perlin_noise = PerlinNoise(tree_noise_parameters)
@@ -118,7 +120,7 @@ minetest.register_on_generated(function(minp, maxp)
 
                 -- Generate trees
                 local tree_noise = tree_perlin_noise:get_2d({x = x, y = z})
-                print("tree_noise:",tree_noise)
+                -- print("tree_noise:",tree_noise)
                 if (tree_noise > 3) then
                     data[area:index(x,yHeight + 1,z)] = pine_tree
                 end
