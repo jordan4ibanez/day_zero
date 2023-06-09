@@ -14,7 +14,6 @@ minetest.register_node("world:water", {
     tiles = {"dz_water.png"}
 })
 
--- This is gonna be tough I think
 local pine_tree_collisionbox = {
     -0.2,-0.5,-0.2,
     0.2,7,0.2
@@ -46,18 +45,19 @@ local terrain_noise_parameters = {
     spread = {x = 200, y = 100, z = 200},
     seed = tonumber(minetest.get_mapgen_setting("seed")) or math.random(0,999999999),
     octaves = 3,
-    persist = 0.95,
+    persist = 0.25,
     lacunarity = 1.5,
 }
 
 local tree_noise_parameters = {
     offset = 0,
     scale = 1,
-    spread = {x = 512, y = 512, z = 512},
+    spread = {x = 2, y = 2, z = 2},
     seed = tonumber(minetest.get_mapgen_setting("seed")) -50000,
-    octaves = 7,
-    persist = 1.0,
-    lacunarity = 10.5,
+    octaves = 8,
+    persist = 0.5,
+    lacunarity = 3.5,
+    flags = "noeased"
 }
 
 
@@ -120,8 +120,8 @@ minetest.register_on_generated(function(minp, maxp)
 
                 -- Generate trees
                 local tree_noise = tree_perlin_noise:get_2d({x = x, y = z})
-                -- print("tree_noise:",tree_noise)
-                if (tree_noise > 3) then
+                print("tree_noise:",tree_noise)
+                if (math.abs(tree_noise) > 1.3) then
                     data[area:index(x,yHeight + 1,z)] = pine_tree
                 end
             end
