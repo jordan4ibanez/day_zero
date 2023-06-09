@@ -92,7 +92,26 @@ minetest.register_on_joinplayer(function(player)
         jump = jump_attempt,
         gravity = gravity
     })
-    -- print(dump2(player:get_physics_override()))
+
+    player:set_lighting({
+        -- This can turn the game black and white
+        saturation = 0.9,
+
+        shadows = {
+            intensity = 0.4
+        },
+        -- I just put in a bunch of randon numbers and it looks nice
+        exposure = {
+            exposure_correction = 0.7,
+            center_weight_power = 0.6,
+            luminance_max = 5,
+            luminance_min = -5,
+            speed_dark_bright = 100,
+            speed_bright_dark = 500
+        }
+    })
+    
+    print(dump2(player:get_lighting()))
 end)
 
 -- Get that garbage out of the server memory
