@@ -19,18 +19,23 @@ local player_animation_table = {
     idle = anim(0,40),
     sneak = anim(40,80),
     walk = anim(40,80),
-    run = anim(80,120)
+    run = anim(80,120),
+    punch = anim(120, 160)
 }
 local player_animation_speeds = {
     idle = 20,
     sneak = 10,
     walk = 30,
-    run = 50
+    run = 50,
+    punch = 60
 }
-local function dispatch_animation(animation)
+local function dispatch_animation(animation, loop)
     local p = player_animation_table
     local a = p[animation]
-    return {x = a.start, y = a.finish}, player_animation_speeds[animation], 0, true
+    if loop == nil then
+        loop = true
+    end
+    return {x = a.start, y = a.finish}, player_animation_speeds[animation], 0, loop
 end
 
 local player_models = {}
@@ -60,7 +65,8 @@ minetest.register_on_joinplayer(function(player)
         model:set_animation(dispatch_animation("idle"))
         player_models[name] = {
             model = model,
-            animation = "idle"
+            animation = "idle",
+            timer = 0
         }
     else
         -- I dunno, kick them and lets try again I guess
@@ -72,7 +78,7 @@ minetest.register_on_joinplayer(function(player)
     player:set_physics_override({
         sneak = false
     })
-    print(dump2(player:get_physics_override()))
+    -- print(dump2(player:get_physics_override()))
 end)
 
 -- Get that garbage out of the server memory
@@ -99,39 +105,66 @@ minetest.register_globalstep(function(dtime)
 
         local running = controls.aux1
         local sneaking = controls.sneak
+        local punching = controls.LMB
+
 
         -- This is the worst logic branch I've ever seen
-        if (controls.up or controls.down or controls.left or controls.right) then
 
-            if sneaking and t.animation ~= "sneak" then
-                t.model:set_animation(dispatch_animation("sneak"))
+        -- Punching basically locks you in place for some reason
+        if punching or t.animation == "punch" then
+            if t.animation ~= "punch" then
+                t.animation = "punch"
+                t.model:set_animation(dispatch_animation("punch"))
                 player:set_physics_override({
-                    speed = 0.5
+                    speed = 0.0,
+                    jump = 0
                 })
-                t.animation = "sneak"
-            elseif not running and not sneaking and t.animation ~= "walk" then
-                t.model:set_animation(dispatch_animation("walk"))
-                player:set_physics_override({
-                    speed = 0.5
-                })
-                t.animation = "walk"
-            elseif running and not sneaking and t.animation ~= "run" then
-                t.model:set_animation(dispatch_animation("run"))
-                player:set_physics_override({
-                    speed = 1.25
-                })
-                t.animation = "run"
+                -- This is definitely not going to work on servers lmao
+                player:add_velocity(vector.multiply(player:get_velocity(), -1))
+            end
+            if t.timer < 0.75 then
+                t.timer = t.timer + dtime
+            else
+                t.animation = ""
+                t.timer = 0
             end
 
-        elseif t.animation ~= "idle" then
-            t.model:set_animation(dispatch_animation("idle"))
-            player:set_physics_override({
-                speed = 0.5
-            })
-            t.animation = "idle"
-        end
+            print("in punch loop")
+        else
+            if (controls.up or controls.down or controls.left or controls.right) then
 
-        
+                if sneaking and t.animation ~= "sneak" then
+                    t.model:set_animation(dispatch_animation("sneak"))
+                    player:set_physics_override({
+                        speed = 0.5,
+                        jump = 1
+                    })
+                    t.animation = "sneak"
+                elseif not running and not sneaking and t.animation ~= "walk" then
+                    t.model:set_animation(dispatch_animation("walk"))
+                    player:set_physics_override({
+                        speed = 0.5,
+                        jump = 1
+                    })
+                    t.animation = "walk"
+                elseif running and not sneaking and t.animation ~= "run" then
+                    t.model:set_animation(dispatch_animation("run"))
+                    player:set_physics_override({
+                        speed = 1.25,
+                        jump = 1
+                    })
+                    t.animation = "run"
+                end
+
+            elseif t.animation ~= "idle" then
+                t.model:set_animation(dispatch_animation("idle"))
+                player:set_physics_override({
+                    speed = 0.5,
+                    jump = 1
+                })
+                t.animation = "idle"
+            end
+        end
     end
 end)
 
