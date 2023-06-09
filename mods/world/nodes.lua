@@ -21,10 +21,10 @@ local pine_tree_collisionbox = {
 -- Pine tree starts off standing up node
 minetest.register_node("world:pine_tree", {
     paramtype = "light",
-    paramtype2 = "degrotate",
     drawtype = "mesh",
     mesh = "dz_pine_tree.obj",
     use_texture_alpha = "clip",
+    backface_culling = false,
     tiles = {
         "dz_pine_tree_branch.png",
         "dz_pine_tree_stem.png",
@@ -79,10 +79,10 @@ local pine_tree_fallen_collisionbox = {
 -- Pine tree entity becomes fallen pine tree node
 minetest.register_node("world:pine_tree_fallen", {
     paramtype = "light",
-    paramtype2 = "degrotate",
     drawtype = "mesh",
     mesh = "dz_pine_tree_fallen.obj",
     use_texture_alpha = "clip",
+    backface_culling = false,
     tiles = {
         "dz_pine_tree_branch.png",
         "dz_pine_tree_stem.png",
