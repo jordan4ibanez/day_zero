@@ -36,7 +36,6 @@ minetest.register_node("world:pine_tree", {
         type = "fixed",
         fixed = pine_tree_collisionbox
     }
-
 })
 
 local terrain_noise_parameters = {
