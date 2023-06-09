@@ -17,11 +17,13 @@ end
 
 local player_animation_table = {
     idle = anim(0,40),
+    sneak = anim(40,80),
     walk = anim(40,80),
     run = anim(80,120)
 }
 local player_animation_speeds = {
     idle = 20,
+    sneak = 2,
     walk = 30,
     run = 50
 }
@@ -96,23 +98,30 @@ minetest.register_globalstep(function(dtime)
         local controls = player:get_player_control()
 
         local running = controls.aux1
+        local sneaking = controls.sneak
 
         -- This is the worst logic branch I've ever seen
-        if not running and t.animation ~= "walk" and (controls.up or controls.down or controls.left or controls.right) then
+        if (controls.up or controls.down or controls.left or controls.right) then
 
-            t.model:set_animation(dispatch_animation("walk"))
-            player:set_physics_override({
-                speed = 0.5
-            })
-            t.animation = "walk"
-
-        elseif running and t.animation ~= "run" and (controls.up or controls.down or controls.left or controls.right) then
-
-            t.model:set_animation(dispatch_animation("run"))
-            player:set_physics_override({
-                speed = 1.25
-            })
-            t.animation = "run"
+            if sneaking and t.animation ~= "sneak" then
+                t.model:set_animation(dispatch_animation("sneak"))
+                player:set_physics_override({
+                    speed = 0.4
+                })
+                t.animation = "sneak"
+            elseif not running and t.animation ~= "walk" then
+                t.model:set_animation(dispatch_animation("walk"))
+                player:set_physics_override({
+                    speed = 0.5
+                })
+                t.animation = "walk"
+            elseif running and t.animation ~= "run" then
+                t.model:set_animation(dispatch_animation("run"))
+                player:set_physics_override({
+                    speed = 1.25
+                })
+                t.animation = "run"
+            end
 
         elseif t.animation ~= "idle" and not (controls.up or controls.down or controls.left or controls.right) then
             t.model:set_animation(dispatch_animation("idle"))

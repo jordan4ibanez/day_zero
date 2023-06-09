@@ -102,6 +102,8 @@ minetest.register_on_generated(function(minp, maxp)
     vm:get_data(data)
     area = VoxelArea:new({MinEdge = emin, MaxEdge = emax})
 
+    print("new map chunk")
+
     for x = minp.x,maxp.x do
         for z = minp.z, maxp.z do
             local yHeight = math.floor((terrain_perlin_noise:get_2d({x = x, y = z}) * heightRange) + 0.5)
@@ -119,7 +121,7 @@ minetest.register_on_generated(function(minp, maxp)
 
                 -- Generate trees
                 local tree_noise = tree_perlin_noise:get_2d({x = x, y = z})
-                print("tree_noise:",tree_noise)
+                -- print("tree_noise:",tree_noise)
                 if (math.abs(tree_noise) > 1.3) then
                     data[area:index(x,yHeight + 1,z)] = pine_tree
                 end
