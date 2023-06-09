@@ -8,7 +8,6 @@ minetest.register_entity("player:player", {
             "player.png"
         }
     },
-    -- todo: needs metadata to delete self
     on_activate = function(self)
         minetest.after(0,function()
             if self.object:get_attach() then return end
