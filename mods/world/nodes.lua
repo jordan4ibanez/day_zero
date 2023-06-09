@@ -76,7 +76,7 @@ local pine_tree_fallen_collisionbox = {
     -0.2,-0.2,-7,
     0.2,0.2,0.5
 }
--- Pine tree becomes fallen node
+-- Pine tree entity becomes fallen pine tree node
 minetest.register_node("world:pine_tree_fallen", {
     paramtype = "light",
     paramtype2 = "degrotate",
