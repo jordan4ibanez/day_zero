@@ -23,7 +23,7 @@ local player_animation_table = {
 }
 local player_animation_speeds = {
     idle = 20,
-    sneak = 2,
+    sneak = 10,
     walk = 30,
     run = 50
 }
@@ -106,16 +106,16 @@ minetest.register_globalstep(function(dtime)
             if sneaking and t.animation ~= "sneak" then
                 t.model:set_animation(dispatch_animation("sneak"))
                 player:set_physics_override({
-                    speed = 0.4
+                    speed = 0.5
                 })
                 t.animation = "sneak"
-            elseif not running and t.animation ~= "walk" then
+            elseif not running and not sneaking and t.animation ~= "walk" then
                 t.model:set_animation(dispatch_animation("walk"))
                 player:set_physics_override({
                     speed = 0.5
                 })
                 t.animation = "walk"
-            elseif running and t.animation ~= "run" then
+            elseif running and not sneaking and t.animation ~= "run" then
                 t.model:set_animation(dispatch_animation("run"))
                 player:set_physics_override({
                     speed = 1.25
@@ -123,7 +123,7 @@ minetest.register_globalstep(function(dtime)
                 t.animation = "run"
             end
 
-        elseif t.animation ~= "idle" and not (controls.up or controls.down or controls.left or controls.right) then
+        elseif t.animation ~= "idle" then
             t.model:set_animation(dispatch_animation("idle"))
             player:set_physics_override({
                 speed = 0.5
