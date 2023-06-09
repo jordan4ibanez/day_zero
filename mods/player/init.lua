@@ -8,7 +8,12 @@ minetest.register_on_joinplayer(function(player)
         })
     end
 
-    
+    player:set_properties({
+        textures = {"dz_nothing.png"},
+        visual_size = {x = 0, y = 0}
+    })
+
+
 end)
 
 
