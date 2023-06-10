@@ -55,6 +55,11 @@ end
 
 local player_models = {}
 
+-- Makes it easy to fuck with the player model externally
+function get_player_model(player_name)
+    return player_models[player_name].model
+end
+
 -- No Jumping
 local jump_attempt = 0.0
 -- Fast falling

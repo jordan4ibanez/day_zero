@@ -3,6 +3,7 @@
         "minetest",
         "VoxelArea",
         "vector",
-        "PerlinNoise"
+        "PerlinNoise",
+        "get_player_model"
     ]
 }
