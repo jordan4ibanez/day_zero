@@ -25,16 +25,25 @@ local player_animation_table = {
     sneak = anim(40,80),
     walk = anim(40,80),
     run = anim(80,120),
+
     fists_up = anim(121, 160),
-    fists_up_walk = anim(160, 200)
+    fists_up_walk = anim(160, 200),
+
+    punch = anim(200,240),
+    punch_walk = anim(240,280)
+    
 }
 local player_animation_speeds = {
     idle = 20,
     sneak = 10,
     walk = 30,
     run = 50,
+
     fists_up = 30,
-    fists_up_walk = 30
+    fists_up_walk = 30,
+
+    punch = 60,
+    punch_walk = 60
 }
 local function dispatch_animation(animation, loop)
     local p = player_animation_table
@@ -135,10 +144,13 @@ minetest.register_globalstep(function(dtime)
     local t = {}
 
     --todo If this causes problems on servers move it into loop
-    local function set_animation(new_animation)
+    local function set_animation(new_animation, loop)
         t.animation = new_animation
         if new_animation == "" then return end
-        t.model:set_animation(dispatch_animation(new_animation))
+        if loop == nil then
+            loop = true
+        end
+        t.model:set_animation(dispatch_animation(new_animation, loop))
     end
 
     local function current_animation()
@@ -173,28 +185,38 @@ minetest.register_globalstep(function(dtime)
         -- This is the worst logic branch I've ever seen
 
         -- Minetest has no way to do multi element animation so this looks like shit
-        if aiming then
-
-            print(current_animation())
+        if aiming or current_animation() == "punch" or current_animation() == "punch_walk" then
 
             -- Players will be stuck at walk speeds while in combat
-            if movement and current_animation() ~= "fists_up_walk" then
-                print("fists up walk")
-                set_animation("fists_up_walk")
-                new_speed(walk_speed)
-            elseif not movement and current_animation() ~= "fists_up" then
-                print("fists up")
-                set_animation("fists_up")
-                new_speed(walk_speed)
+            if current_animation() == "punch" or current_animation() == "punch_walk" then
+                if timer() < 0.6 then
+                    set_timer(timer() + dtime)
+                else
+                    set_timer(0)
+                    -- Player is out of punching animation
+                    set_animation("")
+                end
+            elseif punching then
+                -- This is a hack to stop animations from breaking flow
+                if movement then
+                    set_animation("punch_walk")
+                    new_speed(walk_speed)
+                else
+                    set_animation("punch")
+                    new_speed(0)
+                    player:add_velocity(vector.multiply(player:get_velocity(), -1))
+                end
+            else
+                if movement and current_animation() ~= "fists_up_walk" then
+                    print("fists up walk")
+                    set_animation("fists_up_walk")
+                    new_speed(walk_speed)
+                elseif not movement and current_animation() ~= "fists_up" then
+                    print("fists up")
+                    set_animation("fists_up")
+                    new_speed(walk_speed)
+                end
             end
-            
-
-            -- if timer() < 0.75 then
-            --     set_timer(timer() + dtime)
-            -- else
-            --     set_animation("")
-            --     set_timer(0)
-            -- end
         -- Now we're moving wooo
         else
             if movement then
