@@ -25,16 +25,16 @@ local player_animation_table = {
     sneak = anim(40,80),
     walk = anim(40,80),
     run = anim(80,120),
-    punch = anim(120, 160),
-    walk_punch = anim(160, 200)
+    fists_up = anim(121, 160),
+    fists_up_walk = anim(160, 200)
 }
 local player_animation_speeds = {
     idle = 20,
     sneak = 10,
     walk = 30,
     run = 50,
-    punch = 60,
-    walk_punch = 60
+    fists_up = 30,
+    fists_up_walk = 30
 }
 local function dispatch_animation(animation, loop)
     local p = player_animation_table
@@ -51,6 +51,10 @@ local player_models = {}
 local jump_attempt = 0.0
 -- Fast falling
 local gravity = 10.0
+-- General speeds
+local walk_speed = 0.5
+local run_speed = 1.1
+local sneak_speed = 0.4
 
 -- Initial hook
 minetest.register_on_joinplayer(function(player)
@@ -130,90 +134,93 @@ minetest.register_globalstep(function(dtime)
     local name = ""
     local t = {}
 
+    --todo If this causes problems on servers move it into loop
+    local function set_animation(new_animation)
+        t.animation = new_animation
+        if new_animation == "" then return end
+        t.model:set_animation(dispatch_animation(new_animation))
+    end
+
+    local function current_animation()
+        return t.animation
+    end
+
     for _,player in ipairs(minetest.get_connected_players()) do
         name = player:get_player_name()
 
         --FIXME: Probably should check if the model exists
         t = player_models[name]
+        
+        local function new_speed(speed)
+            player:set_physics_override({
+                speed = speed
+            })
+        end
+
+        local function timer() return t.timer end
+        local function set_timer(new_value) t.timer = new_value end
 
         local controls = player:get_player_control()
-
         local running = controls.aux1
         local sneaking = controls.sneak
-        local punching = controls.LMB
         local movement = controls.up or controls.down or controls.left or controls.right
+
+
+        local punching = controls.LMB
+        local aiming = controls.RMB
 
 
         -- This is the worst logic branch I've ever seen
 
-        -- Minetest has no way to do multi element animation so I have to make it so you're standing still while you punch, even if you're moving
-        if punching or t.animation == "punch" or t.animation == "walk_punch" then
-            if t.animation ~= "punch" then
+        -- Minetest has no way to do multi element animation so this looks like shit
+        if aiming then
 
-                if movement then
-                    t.animation = "walk_punch"
-                    t.model:set_animation(dispatch_animation("walk_punch"))
-                else
-                    t.animation = "punch"
-                    t.model:set_animation(dispatch_animation("punch"))
-                end
-                
-                -- Players will be stuck at walk speeds while punching
-                player:set_physics_override({
-                    speed = 0.5,
-                    jump = jump_attempt
-                })
-                
+            print(current_animation())
 
+            -- Players will be stuck at walk speeds while in combat
+            if movement and current_animation() ~= "fists_up_walk" then
+                print("fists up walk")
+                set_animation("fists_up_walk")
+                new_speed(walk_speed)
+            elseif not movement and current_animation() ~= "fists_up" then
+                print("fists up")
+                set_animation("fists_up")
+                new_speed(walk_speed)
             end
-            if t.timer < 0.75 then
-                t.timer = t.timer + dtime
-            else
-                t.animation = ""
-                t.timer = 0
-            end
+            
+
+            -- if timer() < 0.75 then
+            --     set_timer(timer() + dtime)
+            -- else
+            --     set_animation("")
+            --     set_timer(0)
+            -- end
         -- Now we're moving wooo
         else
             if movement then
 
                 if sneaking and t.animation ~= "sneak" then
-
-                    t.model:set_animation(dispatch_animation("sneak"))
-                    t.animation = "sneak"
-
-                    player:set_physics_override({
-                        speed = 0.5,
-                        jump = jump_attempt
-                    })
+                    
+                    set_animation("sneak")
+                    new_speed(sneak_speed)
 
                 elseif not running and not sneaking and t.animation ~= "walk" then
 
-                    t.model:set_animation(dispatch_animation("walk"))
-                    t.animation = "walk"
-
-                    player:set_physics_override({
-                        speed = 0.5,
-                        jump = jump_attempt
-                    })
+                    set_animation("walk")
+                    new_speed(walk_speed)
 
                 elseif running and not sneaking and t.animation ~= "run" then
-                    t.model:set_animation(dispatch_animation("run"))
-                    t.animation = "run"
 
-                    player:set_physics_override({
-                        speed = 1.25,
-                        jump = jump_attempt
-                    })
+                    set_animation("run")
+                    new_speed(run_speed)
+
                 end
 
             elseif t.animation ~= "idle" then
-                t.model:set_animation(dispatch_animation("idle"))
-                t.animation = "idle"
-                
-                player:set_physics_override({
-                    speed = 0.5,
-                    jump = jump_attempt
-                })
+
+                set_animation("idle")
+                new_speed(walk_speed)
+
             end
         end
     end
