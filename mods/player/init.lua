@@ -25,14 +25,16 @@ local player_animation_table = {
     sneak = anim(40,80),
     walk = anim(40,80),
     run = anim(80,120),
-    punch = anim(120, 160)
+    punch = anim(120, 160),
+    walk_punch = anim(160, 200)
 }
 local player_animation_speeds = {
     idle = 20,
     sneak = 10,
     walk = 30,
     run = 50,
-    punch = 60
+    punch = 60,
+    walk_punch = 60
 }
 local function dispatch_animation(animation, loop)
     local p = player_animation_table
@@ -139,21 +141,30 @@ minetest.register_globalstep(function(dtime)
         local running = controls.aux1
         local sneaking = controls.sneak
         local punching = controls.LMB
+        local movement = controls.up or controls.down or controls.left or controls.right
 
 
         -- This is the worst logic branch I've ever seen
 
-        -- Punching basically locks you in place for some reason
-        if punching or t.animation == "punch" then
+        -- Minetest has no way to do multi element animation so I have to make it so you're standing still while you punch, even if you're moving
+        if punching or t.animation == "punch" or t.animation == "walk_punch" then
             if t.animation ~= "punch" then
-                t.animation = "punch"
-                t.model:set_animation(dispatch_animation("punch"))
+
+                if movement then
+                    t.animation = "walk_punch"
+                    t.model:set_animation(dispatch_animation("walk_punch"))
+                else
+                    t.animation = "punch"
+                    t.model:set_animation(dispatch_animation("punch"))
+                end
+                
+                -- Players will be stuck at walk speeds while punching
                 player:set_physics_override({
-                    speed = 0.0,
-                    jump = 0
+                    speed = 0.5,
+                    jump = jump_attempt
                 })
-                -- This is definitely not going to work on servers lmao
-                player:add_velocity(vector.multiply(player:get_velocity(), -1))
+                
+
             end
             if t.timer < 0.75 then
                 t.timer = t.timer + dtime
@@ -161,41 +172,48 @@ minetest.register_globalstep(function(dtime)
                 t.animation = ""
                 t.timer = 0
             end
-
         -- Now we're moving wooo
         else
-            if (controls.up or controls.down or controls.left or controls.right) then
+            if movement then
 
                 if sneaking and t.animation ~= "sneak" then
+
                     t.model:set_animation(dispatch_animation("sneak"))
-                    player:set_physics_override({
-                        speed = 0.5,
-                        jump = jump_attempt
-                    })
                     t.animation = "sneak"
-                elseif not running and not sneaking and t.animation ~= "walk" then
-                    t.model:set_animation(dispatch_animation("walk"))
+
                     player:set_physics_override({
                         speed = 0.5,
                         jump = jump_attempt
                     })
+
+                elseif not running and not sneaking and t.animation ~= "walk" then
+
+                    t.model:set_animation(dispatch_animation("walk"))
                     t.animation = "walk"
+
+                    player:set_physics_override({
+                        speed = 0.5,
+                        jump = jump_attempt
+                    })
+
                 elseif running and not sneaking and t.animation ~= "run" then
                     t.model:set_animation(dispatch_animation("run"))
+                    t.animation = "run"
+
                     player:set_physics_override({
                         speed = 1.25,
                         jump = jump_attempt
                     })
-                    t.animation = "run"
                 end
 
             elseif t.animation ~= "idle" then
                 t.model:set_animation(dispatch_animation("idle"))
+                t.animation = "idle"
+                
                 player:set_physics_override({
                     speed = 0.5,
                     jump = jump_attempt
                 })
-                t.animation = "idle"
             end
         end
     end
