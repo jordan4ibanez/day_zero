@@ -31,7 +31,6 @@ local player_animation_table = {
 
     punch = anim(200,240),
     punch_walk = anim(240,280)
-    
 }
 local player_animation_speeds = {
     idle = 20,
